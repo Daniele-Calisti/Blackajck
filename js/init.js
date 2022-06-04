@@ -1,4 +1,4 @@
-let valori = ['10','ace','jack','queen','king'];
+let valori = ['2','3','4','5','6','7','8','9','10','ace','jack','queen','king'];
 let semi = ['clubs','diamonds','hearts','spades'];
 let mazzo =	[];
 let giocatore = [];
@@ -26,34 +26,32 @@ const daiCarte = () => {
 	    	if(i < 4)
 	    	{
 	    		let cartaDaDare = getCarta();
-				levaCarta(cartaDaDare);
+					levaCarta(cartaDaDare);
 
-	    		switch(i)
-				{
-					case 0:
-						giocatore.push(cartaDaDare);
-						renderCarta(7, cartaDaDare);
-						break;
-					case 1:
-						dealer.push(cartaDaDare);
-						renderCarta(2, cartaDaDare);
-						break;
-					case 2:
-						giocatore.push(cartaDaDare);
-						renderCarta(8, cartaDaDare);
-						break;
-					case 3:
-						dealer.push(cartaDaDare);
-						renderCarta(3, "cardback1");
-						break;
-				}
-				if(i == 3)
-	    		{
+		    		switch(i)
+					{
+						case 0:
+							giocatore.push(cartaDaDare);
+							renderCarta(7, cartaDaDare);
+							break;
+						case 1:
+							dealer.push(cartaDaDare);
+							renderCarta(2, cartaDaDare);
+							break;
+						case 2:
+							giocatore.push(cartaDaDare);
+							renderCarta(8, cartaDaDare);
+							break;
+						case 3:
+							dealer.push(cartaDaDare);
+							renderCarta(3, "cardback1");
+							break;
+					}
+					if(i == 3)
 	    			if(getValore(giocatore[0]) == getValore(giocatore[1]))
-    					document.getElementById('split').disabled = false;
-	    		}
-	    		
-				i++;
+	  					document.getElementById('split').disabled = false;
+		    		
+					i++;
 	    	}else
 	    	{
 	    		clearInterval(interval);
@@ -76,7 +74,8 @@ const getValore = card => {
 }
 const renderCarta = (id, daDare) => {
 	
-	document.getElementById(id).innerHTML += '<div class="uk-card-media-top"><img src="../assets/images/cards/'+daDare+'.png" width="150" alt=""></div>';
+	document.getElementById(id).innerHTML += '<div class="uk-card-media-top"><img ' + (id == 3  ? 'id="manoDealer"' : '') + ' src="../assets/images/cards/'+daDare+'.png" width="150" alt=""></div>';
+	
 	var b = $("#1").position();
 	$("#"+id).animate({top:"+" + b.top},200);
 
@@ -105,6 +104,25 @@ const levaCarta = card => {
 	mazzo.splice(indexCarta, 1);
 }
 
+const getPunteggio = (array) => {
+	let punteggio = 0;
+
+	array.forEach( (el) => {
+		punteggio += getValore(el);
+	});
+
+	return punteggio;
+}
+
+const checkSballato = (punteggio) => {
+		return punteggio > 21;
+}
+
+const stopTurno = () => {
+	document.getElementById('buttonGiocatore').style.visibility = 'hidden';
+}
+
+
 const main = () => {
 	
 	createMazzo();
@@ -125,13 +143,16 @@ const main = () => {
     }, i == 0 ? 500 : 3000);
 
     addListener('carta', 'click', () => {
+
+    	document.getElementById('carta').disabled = true;
+
     	let cartaDaDare = getCarta();
     	let render = -1;
 
-		levaCarta(cartaDaDare);
-		giocatore.push(cartaDaDare);
+			levaCarta(cartaDaDare);
+			giocatore.push(cartaDaDare);
 
-		switch(giocatore.length)
+			switch(giocatore.length)
     	{
     		case 3:
     			render = 9;
@@ -142,11 +163,62 @@ const main = () => {
     		case 5:
     			render = 11;
     			break;
-
     	}
 
-		renderCarta(render, cartaDaDare);
+			renderCarta(render, cartaDaDare);
+
+			setTimeout( () => {
+				document.getElementById('carta').disabled = false;
+			}, 1000);
+
+
+			setTimeout( () => {
+				if(checkSballato(getPunteggio(giocatore)))
+				{
+					alert("Sballato!");
+				}
+			}, 1500);
+    });
+
+    addListener('stai','click', () => {
+    		stopTurno();
+
+    		setTimeout( () => {
+    				document.getElementById('manoDealer').src = '../assets/images/cards/' + dealer[0]+'.png';
+
+    				console.log("punteggio --> " + getPunteggio(dealer));
+
+    				while(getPunteggio(dealer) <= 16)
+    				{
+    					setTimeout( () => {
+	    						let cartaDaDare = getCarta();
+						    	let render = -1;
+
+									levaCarta(cartaDaDare);
+									dealer.push(cartaDaDare);
+
+									switch(giocatore.length)
+						    	{
+						    		case 3:
+						    			render = 4;
+						    			break;
+						    		case 4:
+						    			render = 5;
+						    			break;
+						    		case 5:
+						    			render = 6;
+						    			break;
+						    	}
+
+						    	renderCarta(render, cartaDaDare);
+    					}, 700);
+    				}
+
+    		}, 1000);
+
     });
 }
 
 main();
+
+
